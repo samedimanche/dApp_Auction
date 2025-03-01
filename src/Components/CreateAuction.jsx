@@ -10,7 +10,7 @@ function CreateAuction({ account }) {
   const [initialCost, setInitialCost] = useState('');
   const [minBidStep, setMinBidStep] = useState('');
   const [timeStep, setTimeStep] = useState('');
-  const [error, setError] = useState(''); // To display error messages
+  const [error, setError] = useState('');
 
   async function createAuction() {
     try {
@@ -20,16 +20,21 @@ function CreateAuction({ account }) {
         return;
       }
 
+      if (isNaN(initialCost) || isNaN(minBidStep) || isNaN(timeStep)) {
+        setError('Initial cost, minimum bid step, and time step must be valid numbers.');
+        return;
+      }
+
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
 
       // Convert inputs to the correct format
-      const startTimeInSeconds = Math.floor(new Date(startTime).getTime() / 1000);
-      const durationInSeconds = duration * 60;
-      const timeStepInSeconds = timeStep * 60;
-      const initialCostInWei = ethers.utils.parseEther(initialCost);
-      const minBidStepInWei = ethers.utils.parseEther(minBidStep);
+      const startTimeInSeconds = Math.floor(new Date(startTime).getTime() / 1000); // Convert to Unix timestamp
+      const durationInSeconds = duration * 60; // Convert minutes to seconds
+      const timeStepInSeconds = timeStep; // Time step is already in seconds
+      const initialCostInWei = ethers.utils.parseEther(initialCost.toString()); // Convert ETH to Wei
+      const minBidStepInWei = ethers.utils.parseEther(minBidStep.toString()); // Convert ETH to Wei
 
       // Call the createAuction function in the smart contract
       const tx = await contractInstance.createAuction(
@@ -68,9 +73,9 @@ function CreateAuction({ account }) {
       <input type="text" placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} />
       <input type="datetime-local" placeholder="Start Time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
       <input type="number" placeholder="Duration (minutes)" value={duration} onChange={(e) => setDuration(e.target.value)} />
-      <input type="number" placeholder="Initial Cost (ETH)" value={initialCost} onChange={(e) => setInitialCost(e.target.value)} />
-      <input type="number" placeholder="Minimum Bid Step (ETH)" value={minBidStep} onChange={(e) => setMinBidStep(e.target.value)} />
-      <input type="number" placeholder="Time Step (minutes)" value={timeStep} onChange={(e) => setTimeStep(e.target.value)} />
+      <input type="number" step="0.01" placeholder="Initial Cost (ETH)" value={initialCost} onChange={(e) => setInitialCost(e.target.value)} />
+      <input type="number" step="0.01" placeholder="Minimum Bid Step (ETH)" value={minBidStep} onChange={(e) => setMinBidStep(e.target.value)} />
+      <input type="number" placeholder="Time Step (seconds)" value={timeStep} onChange={(e) => setTimeStep(e.target.value)} />
       <button onClick={createAuction}>Create Auction</button>
     </div>
   );

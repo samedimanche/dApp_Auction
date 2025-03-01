@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { contractAbi, contractAddress } from './Constant/constant';
-import Login from './Components/Login'; // Import the Login component
-import LoginError from './Components/LoginError'; // Import the LoginError component
+import Login from './Components/Login';
+import LoginError from './Components/LoginError';
 import CreateAuction from './Components/CreateAuction';
 import AuctionList from './Components/AuctionList';
+import AuctionHistory from './Components/AuctionHistory';
 import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -81,6 +82,7 @@ function App() {
             <Navbar.Collapse id="responsive-navbar-nav">
               <Nav className="mx-auto link_navbar1">
                 <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/">Auctions</Link>
+                <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/auction-history">Auction History</Link>
                 {account === '0xf8abc2c83708d538285B2ceB53B7bE4F4D1B86fA' && (
                   <Link to="/createauction" style={{ color: '#5f5f5f', fontSize: '20px' }}>Create Auction</Link>
                 )}
@@ -95,6 +97,19 @@ function App() {
           element={
             isConnected ? (
               <AuctionList
+                account={account}
+                auctions={auctions}
+              />
+            ) : (
+              <Login connectWallet={connectToMetamask} />
+            )
+          }
+        />
+        <Route
+          path="/auction-history"
+          element={
+            isConnected ? (
+              <AuctionHistory
                 account={account}
                 auctions={auctions}
               />

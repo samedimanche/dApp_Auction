@@ -1,4 +1,4 @@
-const contractAddress = "0x2b7538ED455F2BF0193993204d7b062D4C001349"; // Add the new contract address here
+const contractAddress = "0x2b7538ED455F2BF0193993204d7b062D4C001349"; // Add the new contract address here , which was created to help to hardhat
 
 const contractAbi = [
   {
