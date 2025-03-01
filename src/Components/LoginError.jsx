@@ -1,13 +1,12 @@
-import React from "react";
+import React from 'react';
 
-const Login = (props) => {
-    return (
-        <div className="login-container">
-            <h1 className="welcome-message">Unauthorized access. Please log in with the allowed account.</h1>
-            <a className="login-button" href="/">
-              На главную страницу</a>
-        </div>
-    )
+function LoginError() {
+  return (
+    <div>
+      <h2>Access Denied</h2>
+      <p>You do not have permission to access this page.</p>
+    </div>
+  );
 }
 
-export default Login;
+export default LoginError;

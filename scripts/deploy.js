@@ -1,16 +1,14 @@
 async function main() {
-  const Voting = await ethers.getContractFactory("Voting");
+  const Auction = await ethers.getContractFactory("Auction");
 
   // Start deployment, returning a promise that resolves to a contract object
-  const Voting_ = await Voting.deploy(["Mark", "Artem", "Viktor", "Tim"],  90); // кандидаты и время существования контракта
-  console.log("Contract address:", Voting_.address);
-
-
+  const auction = await Auction.deploy();
+  console.log("Contract address:", auction.address);
 }
 
 main()
- .then(() => process.exit(0))
- .catch(error => {
-   console.error(error);
-   process.exit(1);
- });
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
