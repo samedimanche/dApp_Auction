@@ -19,17 +19,17 @@ function AuctionList({ account, auctions }) {
     const formattedAuctions = auctions.map((auction, index) => ({
       ...auction,
       id: index, // Ensure the correct auctionId is mapped
-      initialCost: ethers.utils.formatEther(auction.initialCost),
-      highestBid: ethers.utils.formatEther(auction.highestBid),
-      minBidStep: ethers.utils.formatEther(auction.minBidStep),
-      startTime: auction.startTime.toNumber(),
-      duration: auction.duration.toNumber(),
-      timeStep: auction.timeStep.toNumber(),
+      initialCost: auction.initialCost, // Already formatted in App.js
+      highestBid: auction.highestBid, // Already formatted in App.js
+      minBidStep: auction.minBidStep, // Already formatted in App.js
+      startTime: auction.startTime, // Already a number
+      duration: auction.duration, // Already a number
+      timeStep: auction.timeStep, // Already a number
     }));
-
+  
     const activeAuctions = filterActiveAuctions(formattedAuctions);
     setAuctionList(activeAuctions);
-
+  
     const initialCountdown = {};
     activeAuctions.forEach((auction) => {
       initialCountdown[auction.id] = auction.timeStep;
@@ -60,17 +60,17 @@ function AuctionList({ account, auctions }) {
         setError('Please enter a valid bid amount.');
         return;
       }
-
+  
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
-      const bidAmountInWei = ethers.utils.parseEther(bidAmount.toString());
+  
+      const bidAmountInWei = ethers.utils.parseEther(bidAmount.toString()); // Convert to wei
       console.log("Bid Amount in Wei:", bidAmountInWei.toString());
-
+  
       const auction = await contractInstance.auctions(auctionId);
       console.log("Auction Details:", auction);
-
+  
       const currentTime = Math.floor(Date.now() / 1000);
       console.log("Current Time:", currentTime);
       if (currentTime < auction.startTime.toNumber()) {
@@ -81,7 +81,7 @@ function AuctionList({ account, auctions }) {
         setError('Auction has ended.');
         return;
       }
-
+  
       const minBid = auction.highestBid.add(auction.minBidStep);
       console.log("Minimum Bid in Wei:", minBid.toString());
       console.log("Bid Amount in Wei:", bidAmountInWei.toString());
@@ -89,31 +89,31 @@ function AuctionList({ account, auctions }) {
         setError(`Bid must be at least ${ethers.utils.formatEther(minBid)} ETH.`);
         return;
       }
-
+  
       const tx = await contractInstance.placeBid(auctionId, {
         value: bidAmountInWei,
         gasLimit: 300000,
       });
       console.log("Transaction Sent:", tx);
       await tx.wait();
-
+  
       setError('');
       const updatedAuctions = await contractInstance.getAuctions();
       const formattedAuctions = updatedAuctions.map((auction, index) => ({
         ...auction,
         id: index,
-        initialCost: ethers.utils.formatEther(auction.initialCost),
-        highestBid: ethers.utils.formatEther(auction.highestBid),
-        minBidStep: ethers.utils.formatEther(auction.minBidStep),
+        initialCost: ethers.utils.formatEther(auction.initialCost.toString()), // Ensure it's a string
+        highestBid: ethers.utils.formatEther(auction.highestBid.toString()), // Ensure it's a string
+        minBidStep: ethers.utils.formatEther(auction.minBidStep.toString()), // Ensure it's a string
         startTime: auction.startTime.toNumber(),
         duration: auction.duration.toNumber(),
         timeStep: auction.timeStep.toNumber(),
       }));
-
+  
       // Filter out inactive auctions after updating
       const activeAuctions = filterActiveAuctions(formattedAuctions);
       setAuctionList(activeAuctions);
-
+  
       // Update countdown for active auctions
       const updatedCountdown = {};
       activeAuctions.forEach((auction) => {
