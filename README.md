@@ -1,5 +1,11 @@
 # auction-dApp
 
+https://volta-explorer.energyweb.org/address/{contract_address}/transactions#address-tabs - check contracts in blockchain
+
+https://voltafaucet.energyweb.org/ - faucet for pay transactions
+
+
+
 1) you need to install the packages using<br>
 ```shell
 npm install
