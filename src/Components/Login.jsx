@@ -1,16 +1,3 @@
-// import React from 'react';
-
-// function Login({ connectWallet }) {
-//   return (
-//     <div>
-//       <h2>Login</h2>
-//       <button onClick={connectWallet}>Connect to Metamask</button>
-//     </div>
-//   );
-// }
-
-// export default Login;
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -59,6 +46,7 @@ function Login({ setAuth, setRole }) {
         />
         <button type="submit">Login</button>
       </form>
+      <p>Don't have an account? <a href="/register">Register here</a></p>
       {localStorage.getItem('token') && (
         <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: '10px' }}>
           <FaSignOutAlt style={{ color: '#5f5f5f', fontSize: '20px' }} /> {/* Logout icon */}
