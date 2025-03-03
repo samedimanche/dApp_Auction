@@ -10,7 +10,6 @@ import AuctionList from './Components/AuctionList';
 import AuctionHistory from './Components/AuctionHistory';
 import './App.css';
 import { FaSignOutAlt } from 'react-icons/fa';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { Navbar, Container, Nav } from 'react-bootstrap';
@@ -23,43 +22,62 @@ function App() {
   const [isAuthenticated, setAuth] = useState(false);
   const [role, setRole] = useState('');
 
+  // Check MetaMask connection and fetch auctions
+  useEffect(() => {
+    const checkMetaMaskAndFetchAuctions = async () => {
+      if (window.ethereum) {
+        try {
+          // Request account access
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+          // Check the network (Volta chain ID: 0x12047)
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+          if (chainId !== '0x12047') {
+            console.error("Please connect to the Volta network!");
+            return;
+          }
+
+          // Set up provider and signer
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+
+          console.log("Fetching auctions from contract...");
+          const auctionsList = await contractInstance.getAuctions();
+          console.log("Raw auctions data from contract:", auctionsList);
+
+          // Format the auctions data
+          const formattedAuctions = auctionsList.map((auction, index) => ({
+            ...auction,
+            id: index,
+            initialCost: ethers.utils.formatEther(auction.initialCost.toString()),
+            highestBid: ethers.utils.formatEther(auction.highestBid.toString()),
+            minBidStep: ethers.utils.formatEther(auction.minBidStep.toString()),
+            startTime: auction.startTime.toNumber(),
+            duration: auction.duration.toNumber(),
+            timeStep: auction.timeStep.toNumber(),
+          }));
+
+          console.log("Formatted auctions:", formattedAuctions);
+          setAuctions(formattedAuctions);
+        } catch (err) {
+          console.error("Error fetching auctions:", err);
+        }
+      } else {
+        console.error("MetaMask is not installed!");
+      }
+    };
+
+    checkMetaMaskAndFetchAuctions();
+  }, []);
+
+  // Check authentication status
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       setAuth(true);
-      getAuctions();
     }
-  }, [isConnected]);
-
-  async function getAuctions() {
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
-      console.log("Fetching auctions from contract..."); // Debugging log
-      const auctionsList = await contractInstance.getAuctions();
-      console.log("Auctions fetched from contract:", auctionsList); // Debugging log
-
-      // Format the auctions data
-      const formattedAuctions = auctionsList.map((auction, index) => ({
-        ...auction,
-        id: index,
-        initialCost: ethers.utils.formatEther(auction.initialCost.toString()), // Ensure it's a string
-        highestBid: ethers.utils.formatEther(auction.highestBid.toString()), // Ensure it's a string
-        minBidStep: ethers.utils.formatEther(auction.minBidStep.toString()), // Ensure it's a string
-        startTime: auction.startTime.toNumber(),
-        duration: auction.duration.toNumber(),
-        timeStep: auction.timeStep.toNumber(),
-      }));
-
-      console.log("Formatted auctions:", formattedAuctions); // Debugging log
-
-      setAuctions(formattedAuctions);
-    } catch (err) {
-      console.error("Error fetching auctions:", err); // Debugging log
-    }
-  }
+  }, []);
 
   return (
     <Router>
@@ -95,13 +113,13 @@ function AppContent({
   role,
   setRole,
 }) {
-  const navigate = useNavigate(); // Initialize the navigate function inside the Router context
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Remove the token
-    setAuth(false); // Set authentication to false
-    setRole(''); // Clear the role
-    navigate('/'); // Redirect to the login page
+    localStorage.removeItem('token');
+    setAuth(false);
+    setRole('');
+    navigate('/');
   };
 
   return (
@@ -133,7 +151,7 @@ function AppContent({
             {isAuthenticated && (
               <Nav>
                 <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <FaSignOutAlt style={{ color: '#5f5f5f', fontSize: '20px' }} /> {/* Logout icon */}
+                  <FaSignOutAlt style={{ color: '#5f5f5f', fontSize: '20px' }} />
                 </button>
               </Nav>
             )}
