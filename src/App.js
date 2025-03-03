@@ -8,6 +8,7 @@ import LoginError from './Components/LoginError';
 import CreateAuction from './Components/CreateAuction';
 import AuctionList from './Components/AuctionList';
 import AuctionHistory from './Components/AuctionHistory';
+import AuctionDetail from './Components/AuctionDetail'; // Import the AuctionDetail component
 import './App.css';
 import { FaSignOutAlt } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -214,6 +215,17 @@ function AppContent({
         <Route
           path="/login"
           element={<Login setAuth={setAuth} setRole={setRole} />}
+        />
+        {/* Route for the detailed auction page */}
+        <Route
+          path="/auction/:auctionId"
+          element={
+            isAuthenticated ? (
+              <AuctionDetail account={account} />
+            ) : (
+              <Login setAuth={setAuth} setRole={setRole} />
+            )
+          }
         />
       </Routes>
     </>
