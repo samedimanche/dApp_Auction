@@ -8,7 +8,8 @@ import LoginError from './Components/LoginError';
 import CreateAuction from './Components/CreateAuction';
 import AuctionList from './Components/AuctionList';
 import AuctionHistory from './Components/AuctionHistory';
-import AuctionDetail from './Components/AuctionDetail'; // Import the AuctionDetail component
+import AuctionDetail from './Components/AuctionDetail';
+import AuctionsWon from './Components/AuctionsWon'; // Import the new AuctionsWon component
 import './App.css';
 import { FaSignOutAlt } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -29,24 +30,25 @@ function App() {
       if (window.ethereum) {
         try {
           // Request account access
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
-
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          setAccount(accounts[0]); // Set the connected account
+  
           // Check the network (Volta chain ID: 0x12047)
           const chainId = await window.ethereum.request({ method: 'eth_chainId' });
           if (chainId !== '0x12047') {
             console.error("Please connect to the Volta network!");
             return;
           }
-
+  
           // Set up provider and signer
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
           const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
+  
           console.log("Fetching auctions from contract...");
           const auctionsList = await contractInstance.getAuctions();
           console.log("Raw auctions data from contract:", auctionsList);
-
+  
           // Format the auctions data
           const formattedAuctions = auctionsList.map((auction, index) => ({
             ...auction,
@@ -58,7 +60,7 @@ function App() {
             duration: auction.duration.toNumber(),
             timeStep: auction.timeStep.toNumber(),
           }));
-
+  
           console.log("Formatted auctions:", formattedAuctions);
           setAuctions(formattedAuctions);
         } catch (err) {
@@ -68,7 +70,7 @@ function App() {
         console.error("MetaMask is not installed!");
       }
     };
-
+  
     checkMetaMaskAndFetchAuctions();
   }, []);
 
@@ -135,6 +137,7 @@ function AppContent({
                 <>
                   <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/">Auctions</Link>
                   <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/auction-history">Auction History</Link>
+                  <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/auctions-won">Auctions Won</Link>
                   {role === 'admin' && (
                     <>
                       <Link to="/createauction" style={{ color: '#5f5f5f', fontSize: '20px' }}>Create Auction</Link>
@@ -187,6 +190,18 @@ function AppContent({
           }
         />
         <Route
+          path="/auctions-won"
+          element={
+            isAuthenticated ? (
+              <AuctionsWon
+                account={account}
+              />
+            ) : (
+              <Login setAuth={setAuth} setRole={setRole} />
+            )
+          }
+        />
+        <Route
           path="/createauction"
           element={
             role === 'admin' ? (
@@ -216,7 +231,6 @@ function AppContent({
           path="/login"
           element={<Login setAuth={setAuth} setRole={setRole} />}
         />
-        {/* Route for the detailed auction page */}
         <Route
           path="/auction/:auctionId"
           element={

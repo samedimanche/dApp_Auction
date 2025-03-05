@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { contractAbi, contractAddress } from '../Constant/constant';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa'; // Import the back arrow icon
+import { FaArrowLeft } from 'react-icons/fa';
 
 function AuctionDetail({ account }) {
   const { auctionId } = useParams();
@@ -61,14 +61,15 @@ function AuctionDetail({ account }) {
         return;
       }
 
-      const tx = await contractInstance.placeBid(auctionId, {
-        value: bidAmountInWei,
+      // Confirm the bid without transferring funds
+      const tx = await contractInstance.placeBid(auctionId, bidAmountInWei, {
         gasLimit: 300000,
       });
       await tx.wait();
 
       setError('');
-      navigate('/'); // Redirect to the auction list after placing a bid
+      alert('Bid placed successfully!');
+      navigate('/');
     } catch (err) {
       console.error('Error placing bid:', err);
       setError('Failed to place bid. Check the console for details.');
@@ -88,18 +89,42 @@ function AuctionDetail({ account }) {
       // Set the bid amount to the minimum required bid
       setBidAmount(minBidInEth);
 
-      // Place the bid automatically
-      const tx = await contractInstance.placeBid(auctionId, {
-        value: minBid,
+      // Confirm the outbid without transferring funds
+      const tx = await contractInstance.placeBid(auctionId, minBid, {
         gasLimit: 300000,
       });
       await tx.wait();
 
       setError('');
-      navigate('/'); // Redirect to the auction list after placing a bid
+      alert('Outbid placed successfully!');
+      navigate('/');
     } catch (err) {
       console.error('Error placing outbid:', err);
       setError('Failed to place outbid. Check the console for details.');
+    }
+  };
+
+  const handlePayPendingBid = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+
+      const auctionData = await contractInstance.auctions(auctionId);
+      const pendingPayment = await contractInstance.pendingPayments(auctionId, account);
+
+      const tx = await contractInstance.payPendingBid(auctionId, {
+        value: pendingPayment,
+        gasLimit: 300000,
+      });
+      await tx.wait();
+
+      setError('');
+      alert('Payment successful!');
+      navigate('/');
+    } catch (err) {
+      console.error('Error paying pending bid:', err);
+      setError('Failed to pay pending bid. Check the console for details.');
     }
   };
 
@@ -109,7 +134,6 @@ function AuctionDetail({ account }) {
 
   return (
     <div style={{ padding: '20px' }}>
-      {/* Back Arrow */}
       <button
         onClick={() => navigate('/')}
         style={{
@@ -180,6 +204,22 @@ function AuctionDetail({ account }) {
       >
         Outbid
       </button>
+      {auction.ended && (
+        <button
+          onClick={handlePayPendingBid}
+          style={{
+            backgroundColor: '#dc3545',
+            color: '#fff',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginTop: '10px',
+          }}
+        >
+          Pay Pending Bid
+        </button>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
