@@ -11,33 +11,33 @@ function AuctionDetail({ account }) {
   const [bidAmount, setBidAmount] = useState('');
   const navigate = useNavigate();
 
+  const fetchAuctionDetails = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+
+      const auctionData = await contractInstance.auctions(auctionId);
+      setAuction({
+        id: auctionId,
+        name: auctionData.name,
+        description: auctionData.description,
+        startTime: auctionData.startTime.toNumber(),
+        duration: auctionData.duration.toNumber(),
+        initialCost: ethers.utils.formatEther(auctionData.initialCost.toString()),
+        minBidStep: ethers.utils.formatEther(auctionData.minBidStep.toString()),
+        timeStep: auctionData.timeStep.toNumber(),
+        highestBid: ethers.utils.formatEther(auctionData.highestBid.toString()),
+        highestBidder: auctionData.highestBidder,
+        ended: auctionData.ended,
+      });
+    } catch (err) {
+      console.error('Error fetching auction details:', err);
+      setError('Failed to fetch auction details.');
+    }
+  };
+
   useEffect(() => {
-    const fetchAuctionDetails = async () => {
-      try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
-        const auctionData = await contractInstance.auctions(auctionId);
-        setAuction({
-          id: auctionId,
-          name: auctionData.name,
-          description: auctionData.description,
-          startTime: auctionData.startTime.toNumber(),
-          duration: auctionData.duration.toNumber(),
-          initialCost: ethers.utils.formatEther(auctionData.initialCost.toString()),
-          minBidStep: ethers.utils.formatEther(auctionData.minBidStep.toString()),
-          timeStep: auctionData.timeStep.toNumber(),
-          highestBid: ethers.utils.formatEther(auctionData.highestBid.toString()),
-          highestBidder: auctionData.highestBidder,
-          ended: auctionData.ended,
-        });
-      } catch (err) {
-        console.error('Error fetching auction details:', err);
-        setError('Failed to fetch auction details.');
-      }
-    };
-
     fetchAuctionDetails();
   }, [auctionId]);
 
@@ -61,15 +61,16 @@ function AuctionDetail({ account }) {
         return;
       }
 
-      // Confirm the bid without transferring funds
+      // Place the bid
       const tx = await contractInstance.placeBid(auctionId, bidAmountInWei, {
         gasLimit: 300000,
       });
       await tx.wait();
 
+      // Clear errors and refresh auction details
       setError('');
-      alert('Bid placed successfully!');
-      navigate('/');
+      setBidAmount('');
+      await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error placing bid:', err);
       setError('Failed to place bid. Check the console for details.');
@@ -89,15 +90,16 @@ function AuctionDetail({ account }) {
       // Set the bid amount to the minimum required bid
       setBidAmount(minBidInEth);
 
-      // Confirm the outbid without transferring funds
+      // Place the outbid
       const tx = await contractInstance.placeBid(auctionId, minBid, {
         gasLimit: 300000,
       });
       await tx.wait();
 
+      // Clear errors and refresh auction details
       setError('');
-      alert('Outbid placed successfully!');
-      navigate('/');
+      setBidAmount('');
+      await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error placing outbid:', err);
       setError('Failed to place outbid. Check the console for details.');
@@ -119,9 +121,9 @@ function AuctionDetail({ account }) {
       });
       await tx.wait();
 
+      // Clear errors and refresh auction details
       setError('');
-      alert('Payment successful!');
-      navigate('/');
+      await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error paying pending bid:', err);
       setError('Failed to pay pending bid. Check the console for details.');

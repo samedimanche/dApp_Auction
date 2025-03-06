@@ -13,6 +13,7 @@ contract Auction {
         uint256 highestBid;
         address highestBidder;
         bool ended;
+        uint256 statuspaid;
     }
 
     AuctionItem[] public auctions;
@@ -52,7 +53,8 @@ contract Auction {
             timeStep: _timeStep,
             highestBid: _initialCost,
             highestBidder: address(0),
-            ended: false
+            ended: false,
+            statuspaid: 0
         }));
 
         emit AuctionCreated(auctions.length - 1, _name, _startTime, _duration);
@@ -89,6 +91,7 @@ contract Auction {
         AuctionItem storage auction = auctions[_auctionId];
         require(block.timestamp <= auction.startTime + auction.duration + 24 hours, "Payment period has ended");
 
+        auction.statuspaid = 1;
         uint256 amount = pendingPayments[_auctionId][msg.sender];
         require(msg.value >= amount, "Insufficient payment");
 

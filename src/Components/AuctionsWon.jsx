@@ -28,8 +28,6 @@ function AuctionsWon({ account }) {
         const allAuctions = await contractInstance.getAuctions();
         console.log("All Auctions:", allAuctions);
 
-        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-
         // Fetch pending payments for the logged-in user
         const auctionsWon = await Promise.all(
           allAuctions.map(async (auction, index) => {
@@ -48,6 +46,7 @@ function AuctionsWon({ account }) {
               highestBid: ethers.utils.formatEther(auction.highestBid.toString()),
               highestBidder: auction.highestBidder,
               ended: auction.ended,
+              statuspaid: auction.statuspaid.toNumber(),
               pendingPayment: ethers.utils.formatEther(pendingPayment.toString()),
             };
           })
@@ -55,14 +54,15 @@ function AuctionsWon({ account }) {
 
         console.log("Auctions Won with Pending Payments:", auctionsWon);
 
+        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+
         // Filter auctions that the user has won and need to pay for
         const filteredAuctions = auctionsWon.filter((auction) => {
           const auctionEndTime = auction.startTime + auction.duration;
-
           return (
-            // auction.statuspaid && // Auction not paid
+            currentTime > auctionEndTime && // Auction has ended
+            auction.statuspaid === 0 && // Auction not paid
             auction.highestBidder.toLowerCase() === account.toLowerCase() && // User is the highest bidder
-            currentTime <= auctionEndTime + 24 * 3600 && // Payment deadline has not passed
             parseFloat(auction.highestBid) > 0 // Pending payment is greater than 0
           );
         });
@@ -130,7 +130,7 @@ function AuctionsWon({ account }) {
                 <strong>Highest Bid:</strong> {auction.highestBid} ETH
               </p>
               <p>
-                <strong>Start Time:</strong> {new Date((auction.startTime) * 1000).toLocaleString()}
+                <strong>Start Time:</strong> {new Date(auction.startTime * 1000).toLocaleString()}
               </p>
               <p>
                 <strong>End Time:</strong> {new Date((auction.startTime + auction.duration) * 1000).toLocaleString()}

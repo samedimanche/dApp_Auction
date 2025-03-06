@@ -1,7 +1,7 @@
 // AuctionHistory.jsx
 import React, { useState } from 'react';
 
-function AuctionHistory({ account, auctions }) {
+function AuctionHistory({ account, auctions, role }) {
   const [expandedAuctionId, setExpandedAuctionId] = useState(null);
 
   // Log the received auctions prop
@@ -19,6 +19,11 @@ function AuctionHistory({ account, auctions }) {
   // Log the filtered ended auctions
   console.log("Ended auctions:", endedAuctions);
 
+  // Filter auctions based on user role
+  const filteredAuctions = role === 'admin' 
+    ? endedAuctions 
+    : endedAuctions.filter(auction => auction.highestBidder.toLowerCase() === account.toLowerCase());
+
   // Toggle expanded auction details
   const toggleDetails = (auctionId) => {
     if (expandedAuctionId === auctionId) {
@@ -31,10 +36,10 @@ function AuctionHistory({ account, auctions }) {
   return (
     <div>
       <h2>Auction History</h2>
-      {endedAuctions.length === 0 ? (
+      {filteredAuctions.length === 0 ? (
         <p>No ended auctions found.</p>
       ) : (
-        endedAuctions.map((auction, index) => {
+        filteredAuctions.map((auction, index) => {
           const startTime = auction.startTime;
           const duration = auction.duration;
           const endTime = startTime + duration;

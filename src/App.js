@@ -183,6 +183,7 @@ function AppContent({
               <AuctionHistory
                 account={account}
                 auctions={auctions}
+                role={role}
               />
             ) : (
               <Login setAuth={setAuth} setRole={setRole} />

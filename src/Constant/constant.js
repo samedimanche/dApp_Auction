@@ -1,4 +1,4 @@
-const contractAddress = "0x10d28083eA19d99Cf5B146eC35c9eb5Ccfc188a6"; // Add the new contract address here , which was created to help to hardhat
+const contractAddress = "0xf233A69f8b940c7e5F1e6f756941dB8C6dA32EBc"; // Add the new contract address here , which was created to help to hardhat
 
 const contractAbi = [
   {
@@ -171,6 +171,11 @@ const contractAbi = [
         "internalType": "bool",
         "name": "ended",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "statuspaid",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -287,6 +292,11 @@ const contractAbi = [
             "internalType": "bool",
             "name": "ended",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "statuspaid",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Auction.AuctionItem[]",
