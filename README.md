@@ -34,3 +34,44 @@ npx hardhat run --network volta scripts/deploy.js
 ```shell
 npm start
 ```
+
+6) For Tailwind <br>
+```shell
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+```
+Open the tailwind.config.js:
+```shell
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+Open the src/App.css:
+```shell
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+Run the Tailwind CLI:
+Add the following script to your package.json to compile Tailwind CSS:
+```shell
+"scripts": {
+  "build:css": "tailwindcss -i ./src/App.css -o ./src/output.css --watch"
+}
+```
+Then, run the script in your terminal:
+```shell
+npm run build:css
+```
+This will generate an output.css file in your src directory.
+Import the Compiled CSS:
+Open src/index.js and import the output.css file:
+```shell
+import './output.css';
+```
