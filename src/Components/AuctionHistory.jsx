@@ -51,6 +51,9 @@ function AuctionHistory({ account, auctions, role }) {
                   <p className="text-sm text-gray-700">
                     <strong>Status Paid:</strong> {auction.statuspaid == 0 ? 'No paid' : 'Paid'}
                   </p>
+                  <p className="text-sm text-gray-700">
+                    <strong>Rejected:</strong> {auction.rejected == 1 ? 'Rejected' : 'No rejected'}
+                  </p>
                   <button
                     onClick={() => toggleDetails(index)}
                     className="w-full mt-4 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200"

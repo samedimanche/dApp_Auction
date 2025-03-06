@@ -14,6 +14,7 @@ contract Auction {
         address highestBidder;
         bool ended;
         uint256 statuspaid;
+        uint256 rejected;
     }
 
     AuctionItem[] public auctions;
@@ -54,7 +55,8 @@ contract Auction {
             highestBid: _initialCost,
             highestBidder: address(0),
             ended: false,
-            statuspaid: 0
+            statuspaid: 0,
+            rejected: 0
         }));
 
         emit AuctionCreated(auctions.length - 1, _name, _startTime, _duration);
@@ -99,6 +101,22 @@ contract Auction {
         payable(owner).transfer(amount);
 
         emit PaymentReceived(_auctionId, msg.sender, amount);
+    }
+
+    function payRejectedBidFine(uint256 _auctionId) public payable {
+        AuctionItem storage auction = auctions[_auctionId];
+        require(auction.rejected == 0, "Bid was not rejected");
+        require(block.timestamp <= auction.startTime + auction.duration + 24 hours, "Payment period has ended");
+    
+        auction.rejected = 1; // Set the rejected status
+        auction.statuspaid = 1; 
+        uint256 rejectionFee = pendingPayments[_auctionId][msg.sender];
+        require(msg.value >= rejectionFee, "Insufficient payment");
+
+        pendingPayments[_auctionId][msg.sender] = 0;
+        payable(owner).transfer(rejectionFee);
+
+        emit PaymentReceived(_auctionId, msg.sender, rejectionFee);
     }
 
     function getAuctions() public view returns (AuctionItem[] memory) {

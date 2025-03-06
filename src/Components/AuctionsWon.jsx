@@ -44,6 +44,7 @@ function AuctionsWon({ account }) {
               ended: auction.ended,
               statuspaid: auction.statuspaid.toNumber(),
               pendingPayment: ethers.utils.formatEther(pendingPayment.toString()),
+              rejected: auction.rejected.toNumber(),
             };
           })
         );
@@ -107,6 +108,29 @@ function AuctionsWon({ account }) {
     }
   };
 
+  const handleRejectPayment = async (auctionId, highestBid) => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
+
+      const rejectionFeeInWei = ethers.utils.parseEther((parseFloat(highestBid) * 0.1).toString());
+      const tx = await contractInstance.payRejectedBidFine(auctionId, {
+        value: rejectionFeeInWei,
+        gasLimit: 300000,
+      });
+      await tx.wait();
+
+      const updatedAuctions = auctions.filter((auction) => auction.id !== auctionId);
+      setAuctions(updatedAuctions);
+
+      alert('Rejection fee payment successful!');
+    } catch (err) {
+      console.error('Error processing rejection fee payment:', err);
+      setError('Failed to process rejection fee payment. Check the console for details.');
+    }
+  };
+
   if (loading) {
     return <p className="text-center text-gray-600">Loading auctions won...</p>;
   }
@@ -164,6 +188,14 @@ function AuctionsWon({ account }) {
                 >
                   Pay Now
                 </button>
+                {auction.rejected === 0 && (
+                  <button
+                    onClick={() => handleRejectPayment(auction.id, auction.highestBid)}
+                    className="bg-red-500 text-white px-4 py-2 rounded"
+                  >
+                    Reject
+                  </button>
+                )}
               </div>
             </div>
           ))}

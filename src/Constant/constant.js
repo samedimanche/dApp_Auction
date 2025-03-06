@@ -1,4 +1,4 @@
-const contractAddress = "0xf233A69f8b940c7e5F1e6f756941dB8C6dA32EBc"; // Add the new contract address here , which was created to help to hardhat
+const contractAddress = "0x934ad4eFd0840a05593009182285b98bF5eb2242"; // Add the new contract address here , which was created to help to hardhat
 
 const contractAbi = [
   {
@@ -176,6 +176,11 @@ const contractAbi = [
         "internalType": "uint256",
         "name": "statuspaid",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rejected",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -297,6 +302,11 @@ const contractAbi = [
             "internalType": "uint256",
             "name": "statuspaid",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rejected",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Auction.AuctionItem[]",
@@ -353,6 +363,19 @@ const contractAbi = [
       }
     ],
     "name": "payPendingBid",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_auctionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "payRejectedBidFine",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
