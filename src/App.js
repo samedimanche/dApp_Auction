@@ -11,10 +11,8 @@ import AuctionHistory from './Components/AuctionHistory';
 import AuctionDetail from './Components/AuctionDetail';
 import AuctionsWon from './Components/AuctionsWon';
 import './App.css';
-import { FaSignOutAlt } from 'react-icons/fa';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { FaSignOutAlt, FaBars } from 'react-icons/fa';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { Navbar, Container, Nav } from 'react-bootstrap';
 
 function App() {
   const [provider, setProvider] = useState(null);
@@ -124,6 +122,7 @@ function AppContent({
   setRole,
 }) {
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -133,43 +132,82 @@ function AppContent({
     navigate('/');
   };
 
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <>
-      <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
-        <Container>
-          <Navbar.Brand href="/">AuctionPlatform</Navbar.Brand>
-          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-          <Navbar.Collapse id="responsive-navbar-nav">
-            <Nav className="mx-auto link_navbar1">
+      <nav className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link to="/" className="text-xl font-bold text-gray-800">
+                AuctionPlatform
+              </Link>
+            </div>
+            <div className="hidden sm:flex sm:space-x-8">
               {isAuthenticated ? (
                 <>
-                  <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/">Auctions</Link>
-                  <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/auction-history">Auction History</Link>
-                  <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/auctions-won">Auctions Won</Link>
+                  <Link to="/" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Auctions</Link>
+                  <Link to="/auction-history" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Auction History</Link>
+                  <Link to="/auctions-won" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Auctions Won</Link>
                   {role === 'admin' && (
                     <>
-                      <Link to="/createauction" style={{ color: '#5f5f5f', fontSize: '20px' }}>Create Auction</Link>
-                      <Link to="/admin-approval" style={{ color: '#5f5f5f', fontSize: '20px' }}>Admin Approval</Link>
+                      <Link to="/createauction" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Create Auction</Link>
+                      <Link to="/admin-approval" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Admin Approval</Link>
                     </>
                   )}
                 </>
               ) : (
                 <>
-                  <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/login">Login</Link>
-                  <Link style={{ marginRight: "30px", color: '#5f5f5f', fontSize: '20px' }} to="/register">Register</Link>
+                  <Link to="/login" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Login</Link>
+                  <Link to="/register" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">Register</Link>
                 </>
               )}
-            </Nav>
+            </div>
+            <div className="sm:hidden flex items-center">
+              <button onClick={toggleMenu} className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">
+                <FaBars />
+              </button>
+            </div>
             {isAuthenticated && (
-              <Nav>
-                <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <FaSignOutAlt style={{ color: '#5f5f5f', fontSize: '20px' }} />
+              <div className="hidden sm:flex sm:items-center">
+                <button onClick={handleLogout} className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-lg font-medium">
+                  <FaSignOutAlt className="inline-block mr-1" /> Logout
                 </button>
-              </Nav>
+              </div>
             )}
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+          </div>
+          {isOpen && (
+            <div className="sm:hidden">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Auctions</Link>
+                    <Link to="/auction-history" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Auction History</Link>
+                    <Link to="/auctions-won" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Auctions Won</Link>
+                    {role === 'admin' && (
+                      <>
+                        <Link to="/createauction" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Create Auction</Link>
+                        <Link to="/admin-approval" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Admin Approval</Link>
+                      </>
+                    )}
+                    <button onClick={handleLogout} className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">
+                      <FaSignOutAlt className="inline-block mr-1" /> Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Login</Link>
+                    <Link to="/register" className="text-gray-900 hover:text-gray-700 block px-3 py-2 rounded-md text-lg font-medium">Register</Link>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
       <Routes>
         <Route
           path="/"
@@ -250,8 +288,24 @@ function AppContent({
             )
           }
         />
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
       </Routes>
     </>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded-lg p-8 max-w-md w-full text-center">
+        <h2 className="text-3xl font-bold text-red-500 mb-4">404 - Page Not Found</h2>
+        <p className="text-gray-700">The page you are looking for does not exist.</p>
+        <Link to="/" className="mt-4 text-blue-500 hover:underline">Go back to Home</Link>
+      </div>
+    </div>
   );
 }
 

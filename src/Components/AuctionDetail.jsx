@@ -9,6 +9,8 @@ function AuctionDetail({ account }) {
   const [auction, setAuction] = useState(null);
   const [error, setError] = useState('');
   const [bidAmount, setBidAmount] = useState('');
+  const [timeLeft, setTimeLeft] = useState(0); // Time left in seconds
+  const [progress, setProgress] = useState(100); // Progress percentage (starts at 100%)
   const navigate = useNavigate();
 
   const fetchAuctionDetails = async () => {
@@ -26,11 +28,15 @@ function AuctionDetail({ account }) {
         duration: auctionData.duration.toNumber(),
         initialCost: ethers.utils.formatEther(auctionData.initialCost.toString()),
         minBidStep: ethers.utils.formatEther(auctionData.minBidStep.toString()),
-        timeStep: auctionData.timeStep.toNumber(),
+        timeStep: auctionData.timeStep.toNumber(), // Total time step in seconds
         highestBid: ethers.utils.formatEther(auctionData.highestBid.toString()),
         highestBidder: auctionData.highestBidder,
         ended: auctionData.ended,
       });
+
+      // Reset timeLeft to the full timeStep when fetching new auction details
+      setTimeLeft(auctionData.timeStep.toNumber());
+      setProgress(100); // Reset progress to 100% (fully filled)
     } catch (err) {
       console.error('Error fetching auction details:', err);
       setError('Failed to fetch auction details.');
@@ -40,6 +46,21 @@ function AuctionDetail({ account }) {
   useEffect(() => {
     fetchAuctionDetails();
   }, [auctionId]);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          const newTime = Math.max(0, prevTime - 1); // Decrease timeLeft by 1 second
+          const newProgress = (newTime / auction?.timeStep) * 100; // Calculate progress
+          setProgress(newProgress);
+          return newTime;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer); // Cleanup timer on unmount
+    }
+  }, [timeLeft, auction?.timeStep]);
 
   const handlePlaceBid = async () => {
     try {
@@ -67,9 +88,11 @@ function AuctionDetail({ account }) {
       });
       await tx.wait();
 
-      // Clear errors and refresh auction details
+      // Clear errors, reset bid amount, and reset timeLeft to auction.timeStep
       setError('');
       setBidAmount('');
+      setTimeLeft(auction?.timeStep); // Reset timeLeft to the full timeStep
+      setProgress(100); // Reset progress to 100% (fully filled)
       await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error placing bid:', err);
@@ -96,9 +119,11 @@ function AuctionDetail({ account }) {
       });
       await tx.wait();
 
-      // Clear errors and refresh auction details
+      // Clear errors, reset bid amount, and reset timeLeft to auction.timeStep
       setError('');
       setBidAmount('');
+      setTimeLeft(auction?.timeStep); // Reset timeLeft to the full timeStep
+      setProgress(100); // Reset progress to 100% (fully filled)
       await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error placing outbid:', err);
@@ -131,98 +156,123 @@ function AuctionDetail({ account }) {
   };
 
   if (!auction) {
-    return <p>Loading auction details...</p>;
+    return <p className="text-center text-gray-600">Loading auction details...</p>;
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <button
-        onClick={() => navigate('/')}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <FaArrowLeft style={{ marginRight: '8px', fontSize: '20px' }} />
-        <span style={{ fontSize: '18px' }}>Back to Auctions</span>
-      </button>
-
-      <h2>{auction.name}</h2>
-      <p>{auction.description}</p>
-      <p>
-        <strong>Start Time:</strong> {new Date(auction.startTime * 1000).toLocaleString()}
-      </p>
-      <p>
-        <strong>End Time:</strong> {new Date((auction.startTime + auction.duration) * 1000).toLocaleString()}
-      </p>
-      <p>
-        <strong>Initial Cost:</strong> {auction.initialCost} ETH
-      </p>
-      <p>
-        <strong>Minimum Bid Step:</strong> {auction.minBidStep} ETH
-      </p>
-      <p>
-        <strong>Highest Bid:</strong> {auction.highestBid} ETH
-      </p>
-      <p>
-        <strong>Highest Bidder:</strong> {auction.highestBidder}
-      </p>
-      <input
-        type="number"
-        step="0.01"
-        placeholder="Bid Amount (ETH)"
-        value={bidAmount}
-        onChange={(e) => setBidAmount(e.target.value)}
-        style={{ marginRight: '10px' }}
-      />
-      <button
-        onClick={handlePlaceBid}
-        style={{
-          backgroundColor: '#007bff',
-          color: '#fff',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginRight: '10px',
-        }}
-      >
-        Place Bid
-      </button>
-      <button
-        onClick={handleOutbid}
-        style={{
-          backgroundColor: '#28a745',
-          color: '#fff',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}
-      >
-        Outbid
-      </button>
-      {auction.ended && (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
         <button
-          onClick={handlePayPendingBid}
-          style={{
-            backgroundColor: '#dc3545',
-            color: '#fff',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginTop: '10px',
-          }}
+          onClick={() => navigate('/')}
+          className="flex items-center text-blue-500 hover:text-blue-600 mb-6"
         >
-          Pay Pending Bid
+          <FaArrowLeft className="mr-2" />
+          <span>Back to Auctions</span>
         </button>
-      )}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+        <h2 className="text-3xl font-bold mb-4">{auction.name}</h2>
+
+        {/* Scrollable Description */}
+        <div
+          className={`mb-6 ${
+            auction.description.length > 200
+              ? 'max-h-32 overflow-y-auto'
+              : ''
+          }`}
+        >
+          <p className="text-gray-700">{auction.description}</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+          <div>
+            <p className="text-sm text-gray-600">
+              <strong>Start Time:</strong> {new Date(auction.startTime * 1000).toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>End Time:</strong> {new Date((auction.startTime + auction.duration) * 1000).toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Initial Cost:</strong> {auction.initialCost} ETH
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Minimum Bid Step:</strong> {auction.minBidStep} ETH
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">
+              <strong>Highest Bid:</strong> {auction.highestBid} ETH
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Highest Bidder:</strong> {auction.highestBidder}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Time Step:</strong> {auction.timeStep} seconds
+            </p>
+          </div>
+        </div>
+
+        {/* Outbid Circle */}
+        <div className="flex justify-center mb-8">
+          <div
+            className="relative w-32 h-32 flex items-center justify-center"
+            onClick={handleOutbid}
+          >
+            <svg className="w-full h-full" viewBox="0 0 36 36">
+              <path
+                className="text-gray-200 stroke-current"
+                strokeWidth="2"
+                fill="none"
+                d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                className="text-blue-500 stroke-current"
+                strokeWidth="2"
+                strokeDasharray={`${progress}, 100`}
+                strokeLinecap="round"
+                fill="none"
+                d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+            </svg>
+            <div className="absolute text-center">
+              <p className="text-sm text-gray-600">Outbid</p>
+              <p className="text-sm text-gray-600">{timeLeft}s</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bid Input and Button */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <input
+            type="number"
+            step="0.01"
+            placeholder="Bid Amount (ETH)"
+            value={bidAmount}
+            onChange={(e) => setBidAmount(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={handlePlaceBid}
+            className="w-full sm:w-auto bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-200"
+          >
+            Place Bid
+          </button>
+        </div>
+
+        {auction.ended && (
+          <button
+            onClick={handlePayPendingBid}
+            className="w-full bg-red-500 text-white py-2 px-6 rounded-lg hover:bg-red-600 transition duration-200"
+          >
+            Pay Pending Bid
+          </button>
+        )}
+
+        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+      </div>
     </div>
   );
 }

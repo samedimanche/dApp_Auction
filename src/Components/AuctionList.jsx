@@ -37,42 +37,52 @@ function AuctionList({ account, auctions }) {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Active Auctions</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+    <div className="p-6">
+      <h2 className="text-3xl font-bold text-center mb-8">Active Auctions</h2>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {auctionList.map((auction) => (
           <div
             key={auction.id}
-            style={{
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              padding: '16px',
-              width: '300px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            }}
+            className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
           >
-            <h3>{auction.name}</h3>
-            <p>{auction.description}</p>
-            <p>
-              <strong>Start Time:</strong> {new Date(auction.startTime * 1000).toLocaleString()}
-            </p>
-            <p>
-              <strong>End Time:</strong> {new Date((auction.startTime + auction.duration) * 1000).toLocaleString()}
-            </p>
-            <button
-              onClick={() => handleParticipate(auction.id)}
-              style={{
-                backgroundColor: '#007bff',
-                color: '#fff',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Participate
-            </button>
+            <div className="p-6">
+              <h3 className="text-xl font-semibold mb-2">{auction.name}</h3>
+              <div
+          className={`mb-6 ${
+            auction.description.length > 200
+              ? 'max-h-32 overflow-y-auto'
+              : ''
+          }`}
+        >
+          <p className="text-gray-700">{auction.description}</p>
+        </div>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-700">
+                  <strong>Start Time:</strong>{' '}
+                  {new Date(auction.startTime * 1000).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>End Time:</strong>{' '}
+                  {new Date((auction.startTime + auction.duration) * 1000).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Initial Cost:</strong> {auction.initialCost} ETH
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Highest Bid:</strong> {auction.highestBid} ETH
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Minimum Bid Step:</strong> {auction.minBidStep} ETH
+                </p>
+              </div>
+              <button
+                onClick={() => handleParticipate(auction.id)}
+                className="w-full mt-4 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+              >
+                Participate
+              </button>
+            </div>
           </div>
         ))}
       </div>

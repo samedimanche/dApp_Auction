@@ -66,17 +66,91 @@ function CreateAuction({ account }) {
   }
 
   return (
-    <div>
-      <h2>Create Auction</h2>
-      {error && <p style={{ color: error.includes('success') ? 'green' : 'red' }}>{error}</p>}
-      <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <input type="text" placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} />
-      <input type="datetime-local" placeholder="Start Time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-      <input type="number" placeholder="Duration (minutes)" value={duration} onChange={(e) => setDuration(e.target.value)} />
-      <input type="number" step="0.01" placeholder="Initial Cost (ETH)" value={initialCost} onChange={(e) => setInitialCost(e.target.value)} />
-      <input type="number" step="0.01" placeholder="Minimum Bid Step (ETH)" value={minBidStep} onChange={(e) => setMinBidStep(e.target.value)} />
-      <input type="number" placeholder="Time Step (seconds)" value={timeStep} onChange={(e) => setTimeStep(e.target.value)} />
-      <button onClick={createAuction}>Create Auction</button>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-4xl">
+        <h2 className="text-2xl font-bold mb-6">Create Auction</h2>
+        {error && <p className={`mb-4 ${error.includes('success') ? 'text-green-500' : 'text-red-500'}`}>{error}</p>}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-gray-700">Name</label>
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Description (optional)</label>
+            <input
+              type="text"
+              placeholder="Description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Start Time</label>
+            <input
+              type="datetime-local"
+              placeholder="Start Time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Duration (minutes)</label>
+            <input
+              type="number"
+              placeholder="Duration (minutes)"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Initial Cost (ETH)</label>
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Initial Cost (ETH)"
+              value={initialCost}
+              onChange={(e) => setInitialCost(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Minimum Bid Step (ETH)</label>
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Minimum Bid Step (ETH)"
+              value={minBidStep}
+              onChange={(e) => setMinBidStep(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700">Time Step (seconds)</label>
+            <input
+              type="number"
+              placeholder="Time Step (seconds)"
+              value={timeStep}
+              onChange={(e) => setTimeStep(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <button
+          onClick={createAuction}
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-6"
+        >
+          Create Auction
+        </button>
+      </div>
     </div>
   );
 }
