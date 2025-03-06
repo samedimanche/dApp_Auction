@@ -12,14 +12,15 @@ function AuctionsWon({ account }) {
   console.log("Account:", account);
 
   useEffect(() => {
-    if (!account) {
-      setError('Please connect your wallet to view auctions won.');
-      setLoading(false);
-      return;
-    }
-
     const fetchAuctionsWon = async () => {
       try {
+        // Wait for the account to be available
+        if (!account) {
+          setError('Please connect your wallet to view auctions won.');
+          setLoading(false);
+          return;
+        }
+
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
@@ -76,6 +77,17 @@ function AuctionsWon({ account }) {
         setLoading(false);
       }
     };
+
+    // Retry fetching auctions if the account is not available immediately
+    if (!account) {
+      const retryInterval = setInterval(() => {
+        if (account) {
+          clearInterval(retryInterval);
+          fetchAuctionsWon();
+        }
+      }, 1000); // Retry every 1 second
+      return () => clearInterval(retryInterval); // Cleanup interval on unmount
+    }
 
     fetchAuctionsWon();
   }, [account]);

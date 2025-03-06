@@ -9,7 +9,7 @@ import CreateAuction from './Components/CreateAuction';
 import AuctionList from './Components/AuctionList';
 import AuctionHistory from './Components/AuctionHistory';
 import AuctionDetail from './Components/AuctionDetail';
-import AuctionsWon from './Components/AuctionsWon'; // Import the new AuctionsWon component
+import AuctionsWon from './Components/AuctionsWon';
 import './App.css';
 import { FaSignOutAlt } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -32,23 +32,23 @@ function App() {
           // Request account access
           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
           setAccount(accounts[0]); // Set the connected account
-  
+
           // Check the network (Volta chain ID: 0x12047)
           const chainId = await window.ethereum.request({ method: 'eth_chainId' });
           if (chainId !== '0x12047') {
             console.error("Please connect to the Volta network!");
             return;
           }
-  
+
           // Set up provider and signer
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
           const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-  
+
           console.log("Fetching auctions from contract...");
           const auctionsList = await contractInstance.getAuctions();
           console.log("Raw auctions data from contract:", auctionsList);
-  
+
           // Format the auctions data
           const formattedAuctions = auctionsList.map((auction, index) => ({
             ...auction,
@@ -60,7 +60,7 @@ function App() {
             duration: auction.duration.toNumber(),
             timeStep: auction.timeStep.toNumber(),
           }));
-  
+
           console.log("Formatted auctions:", formattedAuctions);
           setAuctions(formattedAuctions);
         } catch (err) {
@@ -70,15 +70,19 @@ function App() {
         console.error("MetaMask is not installed!");
       }
     };
-  
+
     checkMetaMaskAndFetchAuctions();
   }, []);
 
-  // Check authentication status
+  // Check authentication status and role on app initialization
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const savedRole = localStorage.getItem('role');
     if (token) {
       setAuth(true);
+    }
+    if (savedRole) {
+      setRole(savedRole); // Set the role from localStorage
     }
   }, []);
 
@@ -96,7 +100,10 @@ function App() {
         isAuthenticated={isAuthenticated}
         setAuth={setAuth}
         role={role}
-        setRole={setRole}
+        setRole={(newRole) => {
+          setRole(newRole);
+          localStorage.setItem('role', newRole); // Persist role in localStorage
+        }}
       />
     </Router>
   );
@@ -120,6 +127,7 @@ function AppContent({
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role'); // Clear role from localStorage on logout
     setAuth(false);
     setRole('');
     navigate('/');
