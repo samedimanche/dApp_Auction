@@ -12,6 +12,7 @@ function AuctionDetail({ account }) {
   const [timeLeft, setTimeLeft] = useState(0); // Time left in seconds
   const [progress, setProgress] = useState(100); // Progress percentage (starts at 100%)
   const navigate = useNavigate();
+  const [ws, setWs] = useState(null);
 
   const fetchAuctionDetails = async () => {
     try {
@@ -48,32 +49,44 @@ function AuctionDetail({ account }) {
   }, [auctionId]);
 
   useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          const newTime = Math.max(0, prevTime - 1); // Decrease timeLeft by 1 second
-          const newProgress = (newTime / auction?.timeStep) * 100; // Calculate progress
-          setProgress(newProgress);
-          return newTime;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer); // Cleanup timer on unmount
-    }
-  }, [timeLeft, auction?.timeStep]);
-
+    const ws = new WebSocket('ws://localhost:5000');
+    setWs(ws);
+  
+    ws.onopen = () => {
+      if (auction) {
+        ws.send(JSON.stringify({ auctionId, action: 'start', timeStep: auction.timeStep }));
+      }
+    };
+  
+    ws.onmessage = (event) => {
+      const { auctionId: receivedAuctionId, timeLeft: receivedTimeLeft } = JSON.parse(event.data);
+      if (receivedAuctionId === auctionId) {
+        setTimeLeft(receivedTimeLeft);
+        setProgress((receivedTimeLeft / auction?.timeStep) * 100);
+      }
+    };
+  
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+  
+    return () => {
+      ws.close();
+    };
+  }, [auctionId, auction?.timeStep]);
+  
   const handlePlaceBid = async () => {
     try {
       if (!bidAmount || isNaN(bidAmount)) {
         setError('Please enter a valid bid amount.');
         return;
       }
-
+  
       const bidAmountInWei = ethers.utils.parseEther(bidAmount.toString());
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contractInstance = new ethers.Contract(contractAddress, contractAbi, signer);
-
+  
       // Check if the bid meets the minimum requirement
       const auctionData = await contractInstance.auctions(auctionId);
       const minBid = auctionData.highestBid.add(auctionData.minBidStep);
@@ -81,18 +94,19 @@ function AuctionDetail({ account }) {
         setError(`Bid must be at least ${ethers.utils.formatEther(minBid)} ETH.`);
         return;
       }
-
+  
       // Place the bid
       const tx = await contractInstance.placeBid(auctionId, bidAmountInWei, {
         gasLimit: 300000,
       });
       await tx.wait();
-
+  
       // Clear errors, reset bid amount, and reset timeLeft to auction.timeStep
       setError('');
       setBidAmount('');
-      setTimeLeft(auction?.timeStep); // Reset timeLeft to the full timeStep
-      setProgress(100); // Reset progress to 100% (fully filled)
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ auctionId, action: 'reset', timeStep: auction.timeStep }));
+      }
       await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error placing bid:', err);
@@ -122,8 +136,9 @@ function AuctionDetail({ account }) {
       // Clear errors, reset bid amount, and reset timeLeft to auction.timeStep
       setError('');
       setBidAmount('');
-      setTimeLeft(auction?.timeStep); // Reset timeLeft to the full timeStep
-      setProgress(100); // Reset progress to 100% (fully filled)
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ auctionId, action: 'reset', timeStep: auction.timeStep }));
+      }
       await fetchAuctionDetails(); // Refresh the auction details
     } catch (err) {
       console.error('Error placing outbid:', err);

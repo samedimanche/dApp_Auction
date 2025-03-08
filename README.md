@@ -141,7 +141,7 @@ The Auction dApp allows users to participate in decentralized auctions, where bi
 ## Future Improvements
 
 1. **Docker Integration**: Package the application in Docker containers for easier deployment and scalability.
-2. **Time Synchronization**: Fix the auction bid time synchronization to rely on server time instead of client time.
+2. **Time auction bid**: If the bid has not been exceeded and the time of the bid step has ended, end the auction.
 
 ## Links
 
