@@ -1,3 +1,6 @@
+Here’s the updated `README.md` file with the Docker section added. I’ve integrated the Docker setup instructions and included the note about MongoDB authentication and time synchronization issues when working in a Docker container.
+
+```markdown
 # Auction dApp
 
 A decentralized auction application (dApp) built on the Volta blockchain, leveraging smart contracts for secure and transparent bidding. This project integrates a full-stack development approach, combining blockchain technology with a modern web application framework.
@@ -52,7 +55,7 @@ The Auction dApp allows users to participate in decentralized auctions, where bi
 1. Clone the repository:
    ```shell
    git clone https://github.com/your-username/auction-dApp.git
-   cd auction-dApp
+   cd dApp_Auction
    ```
 
 2. Install dependencies:
@@ -62,6 +65,8 @@ The Auction dApp allows users to participate in decentralized auctions, where bi
 
 3. Compile smart contracts:
    ```shell
+   cd blockchain
+   npm install
    npx hardhat compile
    ```
 
@@ -72,17 +77,19 @@ The Auction dApp allows users to participate in decentralized auctions, where bi
 
 5. Update the contract address in the following files:
    - `.env`
-   - `react-app/src/Constant/constant.js`
+   - `frontend/src/Constant/constant.js`
 
 6. Start the backend server:
    ```shell
    cd backend
+   npm install
    node server.js
    ```
 
 7. Start the React application:
    ```shell
-   cd ../react-app
+   cd frontend
+   npm install
    npm start
    ```
 
@@ -127,6 +134,94 @@ The Auction dApp allows users to participate in decentralized auctions, where bi
    import './output.css';
    ```
 
+## Docker Setup
+
+To containerize your project using Docker, you'll need to create Dockerfiles for each component (backend, blockchain, and frontend) and a `docker-compose.yml` file to manage the multi-container setup. Below is a step-by-step guide to help you achieve this:
+
+### Step 1: Create Dockerfiles for Each Component
+
+1. **Backend Dockerfile**  
+   Created a Dockerfile in the `backend` directory:
+   
+
+2. **Blockchain Dockerfile**  
+   Created a Dockerfile in the `blockchain` directory:
+   
+
+3. **Frontend Dockerfile**  
+   Created a Dockerfile in the `frontend` directory:
+   
+
+### Step 2: Create a `docker-compose.yml` File
+
+Created a `docker-compose.yml` file in the root of your project to manage all the services (backend, blockchain, and frontend):
+
+
+### Step 3: Build and Run the Docker Containers
+
+Build and start the containers:
+```shell
+docker-compose up --build
+```
+
+Access the services:
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:5000
+- **MongoDB**: mongodb://localhost:27017
+
+### Notes:
+- When working in a Docker container, there is no normal connection to the MongoDB database for authentication. Ensure proper configuration for MongoDB authentication in your Docker setup.
+- Fix the auction bid time synchronization to rely on the server inside the container.
+
+### Step 4: (Optional) Use GitHub Actions for CI/CD
+
+You can set up a GitHub Actions workflow to automatically build and push Docker images to a container registry (e.g., Docker Hub). Here's an example `.github/workflows/docker.yml`:
+
+```yaml
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          tags: your-dockerhub-username/backend:latest
+
+      - name: Build and push blockchain
+        uses: docker/build-push-action@v4
+        with:
+          context: ./blockchain
+          push: true
+          tags: your-dockerhub-username/blockchain:latest
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: true
+          tags: your-dockerhub-username/frontend:latest
+```
+
+This setup will allow you to run your entire project in Docker containers, making it easier to develop, test, and deploy.
+
 ## Usage
 
 1. **Admin**:
@@ -149,3 +244,6 @@ The Auction dApp allows users to participate in decentralized auctions, where bi
 - **Volta Faucet**: [Get Test Tokens](https://voltafaucet.energyweb.org/)
 
 ---
+```
+
+Let me know if you need further adjustments!
