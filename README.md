@@ -1,6 +1,3 @@
-Here’s the updated `README.md` file with the Docker section added. I’ve integrated the Docker setup instructions and included the note about MongoDB authentication and time synchronization issues when working in a Docker container.
-
-```markdown
 # Auction dApp
 
 A decentralized auction application (dApp) built on the Volta blockchain, leveraging smart contracts for secure and transparent bidding. This project integrates a full-stack development approach, combining blockchain technology with a modern web application framework.
