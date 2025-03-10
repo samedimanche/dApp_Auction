@@ -1,0 +1,21 @@
+{
+  "name": "blockchain",
+  "version": "1.0.0",
+  "description": "Smart contracts and blockchain-related code for the Auction dApp",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy": "npx hardhat run --network volta scripts/deploy.js",
+    "clean": "npx hardhat clean"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.1"
+  },
+  "devDependencies": {
+    "hardhat": "^2.13.0"
+  }
+}
